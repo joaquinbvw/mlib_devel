@@ -164,8 +164,10 @@ class ads5296x4(YellowBlock):
         
         # The master FPGA clock (which will get turned into user_clk if the Simulink
         # clock source is set to be this FMC port) is adcX_sclk2
-        top.add_signal('adc%d_clk' % self.port)
-        top.assign_signal('adc%d_clk' % self.port, 'ads5296_%d_sclk2' % self.port)
+        #top.add_signal('adc%d_clk' % self.port)
+        #top.assign_signal('adc%d_clk' % self.port, 'ads5296_%d_sclk2' % self.port)
+        top.add_signal('temp_clk')
+        top.assign_signal('temp_clk', 'ads5296_%d_sclk2' % self.port)
 
         # The simulink yellow block provides a simulink-input to drive reset. This can be passed straight
         # to top-level ports. Let the synthesizer infer buffers.
@@ -221,9 +223,9 @@ class ads5296x4(YellowBlock):
         top.add_signal("adc%d_clk90" % self.port)
         top.add_signal("adc%d_clk180" % self.port)
         top.add_signal("adc%d_clk270" % self.port)
-        top.assign_signal("adc%d_clk90" % self.port, "1'b0")
-        top.assign_signal("adc%d_clk180" % self.port, "1'b0")
-        top.assign_signal("adc%d_clk270" % self.port, "1'b0")
+        #top.assign_signal("adc%d_clk90" % self.port, "1'b0")
+        #top.assign_signal("adc%d_clk180" % self.port, "1'b0")
+        #top.assign_signal("adc%d_clk270" % self.port, "1'b0")
 
         snap_chan = ascii_lowercase
         for b in range(self.board_count):
@@ -398,7 +400,7 @@ class ads5296x4(YellowBlock):
         # All these clocks are async with sys_clk
         for clkconst0 in clkconsts0:
             cons.append(clkconst0)
-            cons.append(RawConstraint('set_clock_groups -name async_%s -asynchronous -group [get_clocks -include_generated_clocks %s] -group [get_clocks -include_generated_clocks pl_sys_clk]' % (clkconst0.name, clkconst0.name)))
+            cons.append(RawConstraint('set_clock_groups -name async_%s -asynchronous -group [get_clocks -include_generated_clocks %s] -group [get_clocks -include_generated_clocks sys_clk0_dcm]' % (clkconst0.name, clkconst0.name)))
 
         if self.board_count > 1:
             # Board 1 FCLK inputs
@@ -409,7 +411,7 @@ class ads5296x4(YellowBlock):
             # Make async with sys_clk
             for clkconst1 in clkconsts1:
                 cons.append(clkconst1)
-                cons.append(RawConstraint('set_clock_groups -name async_%s -asynchronous -group [get_clocks -include_generated_clocks %s] -group [get_clocks -include_generated_clocks pl_sys_clk]' % (clkconst1.name, clkconst1.name)))
+                cons.append(RawConstraint('set_clock_groups -name async_%s -asynchronous -group [get_clocks -include_generated_clocks %s] -group [get_clocks -include_generated_clocks sys_clk0_dcm]' % (clkconst1.name, clkconst1.name)))
             # Make clocks between boards async
             for clkconst1 in clkconsts1:
                 for clkconst0 in clkconsts0:
@@ -455,7 +457,7 @@ class ads5296x4(YellowBlock):
         
         #for b1 in range(self.board_count):
         #    root1 = "%s_%d" % (self.fullname, b1)
-        #    cons.append(RawConstraint('set_clock_groups -name async_%s -asynchronous -group [get_clocks -include_generated_clocks %s] -group [get_clocks -include_generated_clocks pl_sys_clk]' % (root1, clocks[b1].name)))
+        #    cons.append(RawConstraint('set_clock_groups -name async_%s -asynchronous -group [get_clocks -include_generated_clocks %s] -group [get_clocks -include_generated_clocks sys_clk0_dcm]' % (root1, clocks[b1].name)))
         #    # Since we're mux-ing the clocks, make all combinations of MMCM and LCLKs ignored
         #    for b2 in range(self.board_count):
         #        root2 = "%s_%d" % (self.fullname, b2)

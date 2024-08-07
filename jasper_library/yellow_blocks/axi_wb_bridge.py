@@ -211,8 +211,7 @@ class axi_wb_bridge(YellowBlock):
         bd.connect_net('RST_O','{:s}/{:s}'.format(self.name, 'RST_O'))
         bd.connect_port('RST_O','RST_O')
         
-        #bd.assign_address('mpsoc/Data', 'axi_slave_wishbone_c_0/S_AXI/reg0', '0xB0000000', '0x00200000')
-        #bd.assign_address('mpsoc/Data', 'axi_slave_wishbone_c_0/S_AXI/reg0', '0xA0000000', '0x00200000')
+        bd.assign_address('mpsoc/Data', 'axi_slave_wishbone_c_0/S_AXI/reg0', '0xB0000000', '0x00200000')
 
     def gen_children(self):
         children = []
