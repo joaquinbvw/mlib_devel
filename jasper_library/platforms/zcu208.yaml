@@ -1,0 +1,176 @@
+name: zcu208
+manufacturer: Xilinx
+fpga: xczu48dr-fsvg1517-2-e-es1
+family: rfsoc
+config_voltage: 1.8
+cfgbvs: GND
+backend_target: vivado
+mmbus_architecture: AXI4-Lite
+mmbus_base_address: 0xA0000000
+# How to address each 32-bit (i.e. 4 indicates byte-addressable)
+mmbus_address_alignment: 4
+sources: []
+constraints: []
+
+rfdc:
+  # gen3 devices can internally route their input refclk or the output of the RFPLL
+  # as the sample clock for adjacent tiles. See PG269. For such configurations,
+  # tile 225 is the preferred tile when available. The zcu216/208 eval boards only
+  # have the sample clock connected to tile 255.
+  #
+  # For gen1 and gen2 devices the `adc_clk_src` is the same as the tile index
+  tile224:
+    has_adc_clk: False
+    adc_clk_src: 2
+  tile225:
+    has_adc_clk: True
+    adc_clk_src: 2
+  tile226:
+    has_adc_clk: True
+    adc_clk_src: 2
+  tile227:
+    has_adc_clk: False
+    adc_clk_src: 2
+
+  tile228:
+    has_dac_clk: True
+    dac_clk_src: 4
+  tile229:
+    has_dac_clk: False
+    dac_clk_src: 4
+  tile230:
+    has_dac_clk: True
+    dac_clk_src: 4
+  tile231:
+    has_dac_clk: False
+    dac_clk_src: 4
+
+
+onehundredgbe:
+  refclk_freq_str: "156.25"
+  include_rs_fec: 1
+  ncommon: 2
+  # modprs pin strapped, sfp tx enable not supported to be managed by 100g core.
+  # It must be toggled by an fpga pin gpio (not yet in yaml), or use the onboard jumpers
+  management_interface: []
+  # UG1075 v1.9 Fig. 1-54
+  cmac_loc:
+    # xczu48dr has 2 cmac locations, can support a second through FMC+
+    - CMACE4_X0Y0
+    - CMACE4_X0Y1
+    
+provides:
+  - adc_clk
+  - axil_clk
+  - sysref_in
+
+pins:
+  clk_100_p:
+    iostd: LVDS_25
+    loc: AU4
+  clk_100_n:
+    iostd: LVDS_25
+    loc: AU3
+  clk_125_p:
+    iostd: LVDS_25
+    loc: A13
+  clk_125_n:
+    iostd: LVDS_25
+    loc: C7
+  sync_in:
+    iostd: LVCMOS18
+    loc: C8
+
+# NOTE: most of the IO constraints and clocking constraints are taken care of by
+# the RFDC IP itself. Vivado has that baked into the output products of teh IP
+# core. The only necessary pins below are the fabirc clocking related to
+# multi-tile sync Adding additional pins and constraints would not hurt anything
+# but provide more transparent less 'hand-wavy'
+# RFDC clocking
+
+  # `SYSREF_P/N_228` on bank 228
+  # constraints determined by rfdc ip, iostandard and loc not set by user
+  sysref_p:
+    loc: U5
+  sysref_n:
+    loc: U4
+
+  # `CLK104_PL_SYSREF_P/N` on HD bank 87, VCCO is 1.8 but LVDS_25 still
+  # supported, see UG571 SelectIO Resources table 3-2 and DS926 tables 23, 24,
+  # and 2
+  pl_sysref_p:
+    iostd: LVDS_25
+    loc: B10
+  pl_sysref_n:
+    iostd: LVDS_25
+    loc: B9
+
+  # `CLK104_PL_CLK_P/N` on HD bank 87
+  pl_clk_p:
+    iostd: LVDS_25
+    loc: B8
+  pl_clk_n:
+    iostd: LVDS_25
+    loc: B7
+
+  # Do not instantiate clock buffer inputs in the user design, part of the RF-ADC [PG269 v2.4 pg.153]
+  adc_clk_224_p:
+    loc: AF5
+  adc_clk_224_n:
+    loc: AF4
+
+  # naming changes between quad- and dual-tile adcs
+  # quad tile vinXZ
+  # dual tile vinX_ZZ
+  # X-tile location, Z refers to adc location in the tile (0-3), ZZ-is either 01
+  # for lower ADC or 23 for upper
+  vin0_01_p:
+    loc: AP2
+  vin_01_n:
+    loc: AP1
+
+# 100 GbE
+  # The 4 GTY lanes are split, 2 to bank 128, 2 to bank 129
+  # IDT 8A34001 output Q11 refclk1 GTY bank 128 P Y31 N Y32
+  # IDT 8A34001 output Q7, refclk1 GTY bank 129 P V31 N V32
+  qsfp_mgt_ref_clk_p:
+    loc:
+      - Y31
+  qsfp_mgt_ref_clk_n:
+    loc:
+      - Y32
+  qsfp_mgt_tx_p:
+         # bank 128 SFP[0:1] # bank 129 SFP[2:3]
+    loc: [Y35, V35, P35, N33]
+  qsfp_mgt_tx_n:
+         # bank 128  # bank 129
+    loc: [Y36, V36,  P36, N34]
+  qsfp_mgt_rx_p:
+    loc:
+         # bank 128  # bank 129
+    loc: [AA38, W38, N38, M36]
+  qsfp_mgt_rx_n:
+         # bank 128  # bank 129
+    loc: [AA39, W39, N39, M37]
+
+# zcu208 has access 8 sets of 3 green single color LEDs (24 total)
+  led:
+    drive_strength: 8 #HP banks don't support the default of 12
+    iostd: LVCMOS12
+    loc:
+      - AR19
+      - AT17
+      - AR17
+      - AU19
+      - AU20
+      - AW21
+      - AV21
+      - AV17
+
+  adc_io:
+    iostd: LVCMOS18
+    loc: [AP5, AP6, AR6, AR7, AV7, AU7, AV8, AU8, AT6, AT7, AU5, AT5, AW4, AW3, AV2, AV3]
+
+  dac_io:
+    iostd: LVCMOS18
+    loc: [A9, A10, A6, A7, A5, B5, C5, C6, C10, D10, D6, E7, E8, E9, E6, F6]
