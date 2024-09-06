@@ -546,4 +546,3 @@ class ads5296x4(YellowBlock):
         #cons.append(RawConstraint(ila))
 
         return cons
-
