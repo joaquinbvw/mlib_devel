@@ -160,5 +160,3 @@ class zcu102(YellowBlock):
         tcl_cmds['post_bitgen'] += ['write_hw_platform -fixed -include_bit -force -file $xsa_file']
 
         return tcl_cmds
-
-
