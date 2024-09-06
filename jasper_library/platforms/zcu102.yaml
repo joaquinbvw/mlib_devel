@@ -6,8 +6,11 @@ config_voltage: 1.8
 cfgbvs: GND
 backend_target: vivado
 mmbus_architecture: ['AXI4-Lite', 'wishbone']
-mmbus_base_address: 0xA0000000
-dsp_wb_base_address: 0xB0000000
+#mmbus_architecture: 'wishbone'
+#mmbus_base_address: 0xA0000000
+mmbus_base_address: 0xB0000000
+#dsp_wb_base_address: 0xB0000000
+dsp_wb_base_address: 0xA0000000
 # How to address each 32-bit (i.e. 4 indicates byte-addressable)
 mmbus_address_alignment: 4
 sources: []
@@ -18,6 +21,12 @@ pins:
     iostd: LVDS_25
     loc: G21
   clk_125_n:
+    iostd: LVDS_25
+    loc: F21
+  eth_clk_125_p:
+    iostd: LVDS_25
+    loc: G21
+  eth_clk_125_n:
     iostd: LVDS_25
     loc: F21
   clk_300_p:
@@ -142,38 +151,74 @@ pins:
       - B13
       - C13
 
+# Defining one more clock high speed signal for forty_gbe_refclk* just to trick the tools, the last one is from the SMA connector on the ZCU102 board
   forty_gbe_refclk_p:
     loc:
       - L27
       - C8
+      - J79
   forty_gbe_refclk_n:
     loc:
       - L28
       - C7
+      - J80
+# Defining four more high speed signals for forty_gbe_* just to trick the tools, the last eight signals don't have any SFP cage, they are from the FMC HPC1 and HPC0 connector
   forty_gbe_tx_p:
     loc:
       - E4
       - D6
       - B6
       - A8
+      - D33
+      - C31
+      - B33
+      - L31
+      - J4
+      - F2
+      - K2
+      - L4
   forty_gbe_tx_n:
     loc:
       - E3
       - D5
       - B5
       - A7
+      - D34
+      - C32
+      - B34
+      - L32
+      - J3
+      - F1
+      - K1
+      - L3
   forty_gbe_rx_p:
     loc:
       - D2
       - C4
       - B2
       - A4
+      - K33
+      - D29
+      - B29
+      - A31
+      - P2
+      - H6
+      - F6
+      - K6
   forty_gbe_rx_n:
     loc:
       - D1
       - C3
       - B1
       - A3
+      - K34
+      - D30
+      - B30
+      - A32
+      - P1
+      - H5
+      - F5
+      - K5
 
   #mgt_tx_p:
     #iostd: DIFF_HSTL_I_18
@@ -1126,4 +1171,3 @@ pins:
   aux0_adc_cs2:
     loc: G15
     iostd: LVCMOS18
-
